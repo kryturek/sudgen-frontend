@@ -22,6 +22,58 @@
   --highlight-related: rgba(30, 144, 255, 0.1);
 }
 
+/* Add these styles at the top, after the root variables */
+
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  background-color: var(--bg-color);
+  border-bottom: 1px solid var(--grid-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  z-index: 100;
+}
+
+.navbar-brand h1 {
+  margin: 0;
+  font-size: 1.5em;
+  color: var(--text-color);
+}
+
+.navbar-menu {
+  display: flex;
+  gap: 10px;
+}
+
+.navbar-end {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.username {
+  color: var(--text-color);
+}
+
+.auth-button {
+  background-color: transparent;
+  border: 2px solid var(--text-color);
+  color: var(--text-color);
+  padding: 5px 15px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.auth-button:hover {
+  background-color: var(--text-color);
+  color: var(--bg-color);
+}
+
 #root {
   margin: 0 auto;
   padding: 0;
@@ -54,6 +106,7 @@ body {
   height: 100%;
   box-sizing: border-box;
   max-width: 90vw;
+  padding-top: 80px; /* navbar height + 20px */
 }
 
 .buttons {
@@ -275,4 +328,69 @@ button:hover {
   right: 0;
   height: 1px;
   background: var(--grid-border-thick);
+}
+
+/* Auth Dialog Styles */
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: var(--text-color);
+  font-weight: 500;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid var(--grid-border);
+  border-radius: 4px;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: var(--focus-outline);
+  box-shadow: 0 0 0 2px rgba(255, 12, 129, 0.1);
+}
+
+.auth-dialog {
+  min-width: 400px;
+}
+
+.auth-dialog h2 {
+  color: var(--text-color);
+  margin-bottom: 1.5rem;
+  font-size: 1.5rem;
+}
+
+.auth-dialog .dialog-buttons {
+  margin-top: 2rem;
+}
+
+.auth-toggle {
+  margin-top: 1rem;
+  text-align: center;
+  color: var(--input-color);
+}
+
+.auth-toggle button {
+  background: none;
+  border: none;
+  color: var(--focus-outline);
+  text-decoration: underline;
+  padding: 0;
+  margin: 0;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.auth-toggle button:hover {
+  color: var(--text-color);
+  background: none;
 }

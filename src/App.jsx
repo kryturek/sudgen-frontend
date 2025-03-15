@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './App.css';
 import { getMockPuzzle } from './mockPuzzles';
+import { AuthDialog } from './components/AuthDialog';
+import { useAuth } from './context/AuthContext';
+import { Navbar } from './components/Navbar';
 
 function App() {
   const [puzzle, setPuzzle] = useState(null);
@@ -17,6 +20,8 @@ function App() {
   const [showDialog, setShowDialog] = useState(false);
   const [removalsCount, setRemovalsCount] = useState(30);
   const [previewPuzzle, setPreviewPuzzle] = useState(null);
+  const [showAuthDialog, setShowAuthDialog] = useState(false);
+  const { isAuthenticated, saveGame } = useAuth();
 
   useEffect(() => {
     document.body.classList.toggle('dark-mode', isDarkMode);
@@ -165,7 +170,7 @@ function App() {
     return puzzle.map(row => row.map(cell => (cell === '' ? 0 : parseInt(cell, 10))));
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const cleanedPuzzle = cleanPuzzleData(puzzle);
     const isFilled = cleanedPuzzle.every(row => row.every(cell => cell !== 0));
     if (!isFilled) {
@@ -176,6 +181,18 @@ function App() {
     const solutionString = JSON.stringify(solution);
     if (puzzleString === solutionString) {
       alert('Congratulations! You solved the puzzle correctly.');
+      if (isAuthenticated && puzzleString === solutionString) {
+        // Save completed game
+        await saveGame({
+          puzzle,
+          solution,
+          pencilMarks,
+          difficulty: removalsCount,
+          startedAt: new Date(),
+          lastPlayed: new Date(),
+          completed: true
+        });
+      }
     } else {
       alert('Incorrect solution. Please try again.');
     }
@@ -267,14 +284,14 @@ function App() {
 
   return (
     <div className="App" style={{ height: '100vh' }}>
-      <h1>Sudoku Puzzle</h1>
-      <div className="buttons">
-        <button onClick={handleNewGame}>New Puzzle</button>
-        <button onClick={handleSolve}>{isSolved ? 'Unsolve' : 'Solve'}</button>
-        <button onClick={() => setIsDarkMode(!isDarkMode)}>
-          {isDarkMode ? '☀️ Light' : '🌙 Dark'}
-        </button>
-      </div>
+      <Navbar
+        isDarkMode={isDarkMode}
+        onDarkModeToggle={() => setIsDarkMode(!isDarkMode)}
+        onNewGame={handleNewGame}
+        onAuthClick={() => setShowAuthDialog(true)}
+        onSolve={handleSolve}    // Add this
+        isSolved={isSolved}      // Add this
+      />
       {puzzle ? (
         <div className="puzzle-container">
           <table className="puzzle">
@@ -406,6 +423,10 @@ function App() {
           </div>
         </div>
       )}
+      <AuthDialog 
+        isOpen={showAuthDialog}
+        onClose={() => setShowAuthDialog(false)}
+      />
     </div>
   );
 }
