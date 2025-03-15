@@ -219,3 +219,10 @@ button:hover {
   text-transform: uppercase;
   letter-spacing: 1px;
 }
+
+.difficulty-description {
+  font-size: 0.9em;
+  color: var(--input-color);
+  margin: 5px 0 15px 0;
+  font-style: italic;
+}

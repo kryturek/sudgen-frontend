@@ -71,7 +71,8 @@ function App() {
   const handleKeyDown = (e, rowIndex, cellIndex) => {
     if (e.shiftKey) {
       const pencilNumber = getPencilMarkNumber(e.key);
-      if (pencilNumber) {
+      // Check if the cell is empty (no number) before allowing pencil marks
+      if (pencilNumber && puzzle[rowIndex][cellIndex] === 0) {
         e.preventDefault();
         const mark = pencilNumber;
         const cellKey = `${rowIndex}-${cellIndex}`;
@@ -157,12 +158,12 @@ function App() {
 
   const handleDialogConfirm = () => {
     setShowDialog(false);
-    // Remove fetchPuzzle call from here since it will be triggered by useEffect
+    fetchPuzzle(removalsCount); // Only generate puzzle when Start is clicked
   };
 
   useEffect(() => {
-    fetchPuzzle(removalsCount); // Will run whenever removalsCount changes
-  }, [removalsCount]); // Add back the removalsCount dependency
+    fetchPuzzle(30); // Initial puzzle load only
+  }, []); 
 
   const getHighlightClass = (rowIndex, cellIndex) => {
     if (!focusedCell) return '';
@@ -197,6 +198,28 @@ function App() {
     if (removals <= 54) return "Master";
     if (removals <= 56) return "Grandmaster";
     return "Impossible";
+  };
+
+  const getDifficultyDescription = (removals) => {
+    const descriptions = {
+      15: "Perfect for learning the basics",
+      20: "Get comfortable with the rules",
+      25: "A gentle introduction",
+      30: "Regular coffee break puzzle",
+      35: "Requires some thinking",
+      40: "You'll need your focus",
+      45: "Real challenge ahead",
+      50: "For the dedicated solver",
+      54: "Test your expertise",
+      56: "Only for the brave",
+      58: "Beyond human limits"
+    };
+    // Find the closest difficulty level
+    const levels = Object.keys(descriptions).map(Number);
+    const closest = levels.reduce((prev, curr) => 
+      Math.abs(curr - removals) < Math.abs(prev - removals) ? curr : prev
+    );
+    return descriptions[closest];
   };
 
   return (
@@ -312,6 +335,7 @@ function App() {
             <div className="slider-container">
               <label>
                 <div className="difficulty-name">{getDifficultyName(removalsCount)}</div>
+                <div className="difficulty-description">{getDifficultyDescription(removalsCount)}</div>
                 <input
                   type="range"
                   min="12"
