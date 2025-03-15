@@ -49,6 +49,11 @@ function App() {
   };
 
   const handleNumberInput = (rowIndex, cellIndex, number) => {
+    // Check if the cell is part of the original puzzle
+    if (originalPuzzle[rowIndex][cellIndex] !== 0) {
+      return; // Don't allow changes to original numbers
+    }
+
     const newPuzzle = puzzle.map((row, rIdx) =>
       row.map((cell, cIdx) => (rIdx === rowIndex && cIdx === cellIndex ? number : cell))
     );
@@ -71,6 +76,28 @@ function App() {
   };
 
   const handleKeyDown = (e, rowIndex, cellIndex) => {
+    // Don't handle any key events for original numbers except arrow navigation
+    if (originalPuzzle[rowIndex][cellIndex] !== 0) {
+      if (e.key.startsWith('Arrow')) {
+        // Only allow arrow key navigation
+        if (e.key === 'ArrowUp' && rowIndex > 0) {
+          e.preventDefault();
+          inputRefs.current[(rowIndex - 1) * 9 + cellIndex].focus();
+        } else if (e.key === 'ArrowDown' && rowIndex < 8) {
+          e.preventDefault();
+          inputRefs.current[(rowIndex + 1) * 9 + cellIndex].focus();
+        } else if (e.key === 'ArrowLeft' && cellIndex > 0) {
+          e.preventDefault();
+          inputRefs.current[rowIndex * 9 + (cellIndex - 1)].focus();
+        } else if (e.key === 'ArrowRight' && cellIndex < 8) {
+          e.preventDefault();
+          inputRefs.current[rowIndex * 9 + (cellIndex + 1)].focus();
+        }
+      }
+      return;
+    }
+
+    // Rest of the existing handleKeyDown logic for non-original numbers
     if (e.shiftKey) {
       const pencilNumber = getPencilMarkNumber(e.key);
       // Check if the cell is empty (no number) before allowing pencil marks
@@ -156,6 +183,8 @@ function App() {
 
   const handleNewGame = () => {
     setShowDialog(true);
+    // Initialize preview with current removalsCount
+    setPreviewPuzzle(getMockPuzzle(removalsCount));
   };
 
   const handleDialogConfirm = () => {
