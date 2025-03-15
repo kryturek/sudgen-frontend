@@ -12,14 +12,18 @@ function App() {
   const [focusedCell, setFocusedCell] = useState(null);
   const inputRefs = useRef([]);
 
+  // Add new state variables
+  const [showDialog, setShowDialog] = useState(false);
+  const [removalsCount, setRemovalsCount] = useState(30);
+
   useEffect(() => {
     document.body.classList.toggle('dark-mode', isDarkMode);
   }, [isDarkMode]);
 
   // Function to fetch puzzle from the FastAPI endpoint
-  const fetchPuzzle = async () => {
+  const fetchPuzzle = async (removals) => {
     try {
-      const response = await fetch('http://localhost:8000/sudoku?removals=55');
+      const response = await fetch(`http://localhost:8000/sudoku?removals=${removals}`);
       const data = await response.json();
       setPuzzle(data.puzzle);
       setSolution(data.solution);
@@ -147,9 +151,18 @@ function App() {
     }
   };
 
+  const handleNewGame = () => {
+    setShowDialog(true);
+  };
+
+  const handleDialogConfirm = () => {
+    setShowDialog(false);
+    // Remove fetchPuzzle call from here since it will be triggered by useEffect
+  };
+
   useEffect(() => {
-    fetchPuzzle();
-  }, []);
+    fetchPuzzle(removalsCount); // Will run whenever removalsCount changes
+  }, [removalsCount]); // Add back the removalsCount dependency
 
   const getHighlightClass = (rowIndex, cellIndex) => {
     if (!focusedCell) return '';
@@ -172,11 +185,25 @@ function App() {
     return '';
   };
 
+  const getDifficultyName = (removals) => {
+    if (removals <= 15) return "Tutorial";
+    if (removals <= 20) return "Beginner";
+    if (removals <= 25) return "Easy";
+    if (removals <= 30) return "Casual";
+    if (removals <= 35) return "Medium";
+    if (removals <= 40) return "Challenging";
+    if (removals <= 45) return "Hard";
+    if (removals <= 50) return "Expert";
+    if (removals <= 54) return "Master";
+    if (removals <= 56) return "Grandmaster";
+    return "Impossible";
+  };
+
   return (
     <div className="App" style={{ height: '100vh' }}>
       <h1>Sudoku Puzzle</h1>
       <div className="buttons">
-        <button onClick={fetchPuzzle}>New Puzzle</button>
+        <button onClick={handleNewGame}>New Puzzle</button>
         <button onClick={handleSolve}>{isSolved ? 'Unsolve' : 'Solve'}</button>
         <button onClick={() => setIsDarkMode(!isDarkMode)}>
           {isDarkMode ? '☀️ Light' : '🌙 Dark'}
@@ -278,6 +305,29 @@ function App() {
       <div className="submit-button">
         <button onClick={handleSubmit}>Submit</button>
       </div>
+      {showDialog && (
+        <div className="dialog-overlay">
+          <div className="dialog">
+            <h2>Choose Difficulty</h2>
+            <div className="slider-container">
+              <label>
+                <div className="difficulty-name">{getDifficultyName(removalsCount)}</div>
+                <input
+                  type="range"
+                  min="12"
+                  max="58"
+                  value={removalsCount}
+                  onChange={(e) => setRemovalsCount(parseInt(e.target.value))}
+                />
+              </label>
+            </div>
+            <div className="dialog-buttons">
+              <button onClick={() => setShowDialog(false)}>Cancel</button>
+              <button onClick={handleDialogConfirm}>Start</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
