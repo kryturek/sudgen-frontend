@@ -7,18 +7,26 @@ function App() {
   const [originalPuzzle, setOriginalPuzzle] = useState(null);
   const [userPuzzle, setUserPuzzle] = useState(null);
   const [isSolved, setIsSolved] = useState(false);
+  const [pencilMarks, setPencilMarks] = useState({});
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [focusedCell, setFocusedCell] = useState(null);
   const inputRefs = useRef([]);
+
+  useEffect(() => {
+    document.body.classList.toggle('dark-mode', isDarkMode);
+  }, [isDarkMode]);
 
   // Function to fetch puzzle from the FastAPI endpoint
   const fetchPuzzle = async () => {
     try {
-      const response = await fetch('http://localhost:8000/sudoku?removals=50');
+      const response = await fetch('http://localhost:8000/sudoku?removals=55');
       const data = await response.json();
       setPuzzle(data.puzzle);
       setSolution(data.solution);
       setOriginalPuzzle(data.puzzle);
       setUserPuzzle(data.puzzle);
       setIsSolved(false);
+      setPencilMarks({});
     } catch (error) {
       console.error('Error fetching puzzle:', error);
     }
@@ -34,23 +42,108 @@ function App() {
     setIsSolved(!isSolved);
   };
 
-  const handleChange = (rowIndex, cellIndex, value) => {
-    if (value.length > 1) return;
+  const handleNumberInput = (rowIndex, cellIndex, number) => {
     const newPuzzle = puzzle.map((row, rIdx) =>
-      row.map((cell, cIdx) => (rIdx === rowIndex && cIdx === cellIndex ? value : cell))
+      row.map((cell, cIdx) => (rIdx === rowIndex && cIdx === cellIndex ? number : cell))
     );
     setPuzzle(newPuzzle);
+    const cellKey = `${rowIndex}-${cellIndex}`;
+    if (pencilMarks[cellKey]) {
+      const newMarks = { ...pencilMarks };
+      delete newMarks[cellKey];
+      setPencilMarks(newMarks);
+    }
+  };
+
+  const getPencilMarkNumber = (key) => {
+    const keyMap = {
+      'q': 1, 'w': 2, 'e': 3,
+      'a': 4, 's': 5, 'd': 6,
+      'z': 7, 'x': 8, 'c': 9
+    };
+    return keyMap[key.toLowerCase()];
   };
 
   const handleKeyDown = (e, rowIndex, cellIndex) => {
-    if (e.key === 'ArrowUp' && rowIndex > 0) {
-      inputRefs.current[(rowIndex - 1) * 9 + cellIndex].focus();
-    } else if (e.key === 'ArrowDown' && rowIndex < 8) {
-      inputRefs.current[(rowIndex + 1) * 9 + cellIndex].focus();
-    } else if (e.key === 'ArrowLeft' && cellIndex > 0) {
-      inputRefs.current[rowIndex * 9 + (cellIndex - 1)].focus();
-    } else if (e.key === 'ArrowRight' && cellIndex < 8) {
-      inputRefs.current[rowIndex * 9 + (cellIndex + 1)].focus();
+    if (e.shiftKey) {
+      const pencilNumber = getPencilMarkNumber(e.key);
+      if (pencilNumber) {
+        e.preventDefault();
+        const mark = pencilNumber;
+        const cellKey = `${rowIndex}-${cellIndex}`;
+        setPencilMarks(prevMarks => {
+          const newMarks = { ...prevMarks };
+          const currentMarks = newMarks[cellKey] ? Array.from(newMarks[cellKey]) : [];
+          const markIndex = currentMarks.indexOf(mark);
+          
+          if (markIndex === -1) {
+            currentMarks.push(mark);
+          } else {
+            currentMarks.splice(markIndex, 1);
+          }
+          
+          if (currentMarks.length === 0) {
+            delete newMarks[cellKey];
+          } else {
+            newMarks[cellKey] = new Set(currentMarks);
+          }
+          return newMarks;
+        });
+      } else if (e.key === 'ArrowUp' && rowIndex > 2) {
+        e.preventDefault();
+        inputRefs.current[(rowIndex - 3) * 9 + cellIndex].focus();
+      } else if (e.key === 'ArrowDown' && rowIndex < 6) {
+        e.preventDefault();
+        inputRefs.current[(rowIndex + 3) * 9 + cellIndex].focus();
+      } else if (e.key === 'ArrowLeft' && cellIndex > 2) {
+        e.preventDefault();
+        inputRefs.current[rowIndex * 9 + (cellIndex - 3)].focus();
+      } else if (e.key === 'ArrowRight' && cellIndex < 6) {
+        e.preventDefault();
+        inputRefs.current[rowIndex * 9 + (cellIndex + 3)].focus();
+      }
+    } else {
+      if (e.key >= '1' && e.key <= '9') {
+        e.preventDefault();
+        handleNumberInput(rowIndex, cellIndex, parseInt(e.key, 10));
+      } else if (e.key === 'Backspace') {
+        e.preventDefault();
+        handleNumberInput(rowIndex, cellIndex, 0);
+      } else if (e.key === 'ArrowUp' && rowIndex > 0) {
+        e.preventDefault();
+        inputRefs.current[(rowIndex - 1) * 9 + cellIndex].focus();
+      } else if (e.key === 'ArrowDown' && rowIndex < 8) {
+        e.preventDefault();
+        inputRefs.current[(rowIndex + 1) * 9 + cellIndex].focus();
+      } else if (e.key === 'ArrowLeft' && cellIndex > 0) {
+        e.preventDefault();
+        inputRefs.current[rowIndex * 9 + (cellIndex - 1)].focus();
+      } else if (e.key === 'ArrowRight' && cellIndex < 8) {
+        e.preventDefault();
+        inputRefs.current[rowIndex * 9 + (cellIndex + 1)].focus();
+      } else if (e.key === 'Enter') {
+        handleSubmit();
+      }
+    }
+  };
+
+  const cleanPuzzleData = (puzzle) => {
+    return puzzle.map(row => row.map(cell => (cell === '' ? 0 : parseInt(cell, 10))));
+  };
+
+  const handleSubmit = () => {
+    const cleanedPuzzle = cleanPuzzleData(puzzle);
+    const isFilled = cleanedPuzzle.every(row => row.every(cell => cell !== 0));
+    if (!isFilled) {
+      alert('Please fill in all cells before submitting.');
+      return;
+    }
+    const puzzleString = JSON.stringify(cleanedPuzzle);
+    const solutionString = JSON.stringify(solution);
+    if (puzzleString === solutionString) {
+      alert('Congratulations! You solved the puzzle correctly.');
+    } else {
+      alert('Incorrect solution. Please try again.');
     }
   };
 
@@ -58,80 +151,133 @@ function App() {
     fetchPuzzle();
   }, []);
 
+  const getHighlightClass = (rowIndex, cellIndex) => {
+    if (!focusedCell) return '';
+    
+    const [focusedRow, focusedCol] = focusedCell;
+    
+    // Check if cell is the focused one
+    if (rowIndex === focusedRow && cellIndex === focusedCol) {
+      return 'highlight-focus';
+    }
+    
+    // Check if cell is in the same row, column, or 3x3 box
+    if (rowIndex === focusedRow || 
+        cellIndex === focusedCol || 
+        (Math.floor(rowIndex/3) === Math.floor(focusedRow/3) && 
+         Math.floor(cellIndex/3) === Math.floor(focusedCol/3))) {
+      return 'highlight-related';
+    }
+    
+    return '';
+  };
+
   return (
-    <div className="App" style={{ textAlign: 'center' }}>
+    <div className="App" style={{ height: '100vh' }}>
       <h1>Sudoku Puzzle</h1>
-      <div style={{ marginBottom: '20px' }}>
-        <button onClick={fetchPuzzle} style={{ marginRight: '10px' }}>New Puzzle</button>
+      <div className="buttons">
+        <button onClick={fetchPuzzle}>New Puzzle</button>
         <button onClick={handleSolve}>{isSolved ? 'Unsolve' : 'Solve'}</button>
+        <button onClick={() => setIsDarkMode(!isDarkMode)}>
+          {isDarkMode ? '☀️ Light' : '🌙 Dark'}
+        </button>
       </div>
       {puzzle ? (
-        <>
-          <table style={{ margin: '0 auto', borderCollapse: 'collapse', marginBottom: '20px' }}>
+        <div className="puzzle-container">
+          <table className="puzzle">
             <tbody>
               {puzzle.map((row, rowIndex) => (
                 <tr key={rowIndex}>
-                  {row.map((cell, cellIndex) => (
-                    <td
-                      key={cellIndex}
-                      style={{
-                        width: '40px',
-                        height: '40px',
-                        textAlign: 'center',
-                        verticalAlign: 'middle',
-                        fontSize: '24px',
-                        borderTop: rowIndex % 3 === 0 ? '2px solid #000' : '1px solid #333',
-                        borderLeft: cellIndex % 3 === 0 ? '2px solid #000' : '1px solid #333',
-                        borderRight: (cellIndex + 1) % 3 === 0 ? '2px solid #000' : '1px solid #333',
-                        borderBottom: (rowIndex + 1) % 3 === 0 ? '2px solid #000' : '1px solid #333',
-                        padding: 0,
-                      }}
-                    >
-                      {originalPuzzle[rowIndex][cellIndex] !== 0 ? (
-                        <div
-                          style={{
-                            width: '100%',
-                            height: '100%',
-                            lineHeight: '40px',
-                            color: '#000',
-                          }}
-                          tabIndex={-1}
-                          onKeyDown={(e) => handleKeyDown(e, rowIndex, cellIndex)}
-                          ref={(el) => (inputRefs.current[rowIndex * 9 + cellIndex] = el)}
-                        >
-                          {cell}
-                        </div>
-                      ) : (
-                        <input
-                          type="text"
-                          value={cell === 0 ? '' : cell}
-                          onChange={(e) => handleChange(rowIndex, cellIndex, e.target.value.replace(/[^1-9]/, ''))}
-                          onKeyDown={(e) => handleKeyDown(e, rowIndex, cellIndex)}
-                          ref={(el) => (inputRefs.current[rowIndex * 9 + cellIndex] = el)}
-                          style={{
-                            width: '100%',
-                            height: '100%',
-                            textAlign: 'center',
-                            fontSize: '24px',
-                            border: 'none',
-                            outline: 'none',
-                            padding: 0,
-                            margin: 0,
-                            boxSizing: 'border-box',
-                            color: '#676767', // Dark gray color for user input
-                          }}
-                        />
-                      )}
-                    </td>
-                  ))}
+                  {row.map((cell, cellIndex) => {
+                    const cellKey = `${rowIndex}-${cellIndex}`;
+                    const marks = pencilMarks[cellKey] ? Array.from(pencilMarks[cellKey]).sort().join(' ') : '';
+                    return (
+                      <td
+                        key={cellIndex}
+                        className={getHighlightClass(rowIndex, cellIndex)}
+                        style={{
+                          width: '50px',
+                          height: '50px',
+                          textAlign: 'center',
+                          verticalAlign: 'middle',
+                          fontSize: '24px',
+                          borderTop: rowIndex % 3 === 0 ? '2px solid var(--grid-border-thick)' : '1px solid var(--grid-border)',
+                          borderLeft: cellIndex % 3 === 0 ? '2px solid var(--grid-border-thick)' : '1px solid var(--grid-border)',
+                          borderRight: (cellIndex + 1) % 3 === 0 ? '2px solid var(--grid-border-thick)' : '1px solid var(--grid-border)',
+                          borderBottom: (rowIndex + 1) % 3 === 0 ? '2px solid var(--grid-border-thick)' : '1px solid var(--grid-border)',
+                          padding: 0,
+                          boxSizing: 'border-box',
+                          position: 'relative',
+                        }}
+                      >
+                        {originalPuzzle[rowIndex][cellIndex] !== 0 ? (
+                          <div
+                            style={{
+                              width: '100%',
+                              height: '100%',
+                              lineHeight: '50px',
+                              color: 'var(--text-color)',
+                            }}
+                            tabIndex={-1}
+                            onKeyDown={(e) => handleKeyDown(e, rowIndex, cellIndex)}
+                            ref={(el) => (inputRefs.current[rowIndex * 9 + cellIndex] = el)}
+                            onFocus={() => setFocusedCell([rowIndex, cellIndex])}
+                            onBlur={() => setFocusedCell(null)}
+                          >
+                            {cell}
+                          </div>
+                        ) : (
+                          <div
+                            tabIndex={0}
+                            onKeyDown={(e) => handleKeyDown(e, rowIndex, cellIndex)}
+                            ref={(el) => (inputRefs.current[rowIndex * 9 + cellIndex] = el)}
+                            style={{
+                              width: '100%',
+                              height: '100%',
+                              lineHeight: '50px',
+                              textAlign: 'center',
+                              fontSize: '24px',
+                              border: 'none',
+                              outline: 'none',
+                              padding: 0,
+                              margin: 0,
+                              boxSizing: 'border-box',
+                              color: 'var(--input-color)',
+                              cursor: 'default',
+                            }}
+                            className="puzzle-cell"
+                            onFocus={() => setFocusedCell([rowIndex, cellIndex])}
+                            onBlur={() => setFocusedCell(null)}
+                          >
+                            {cell !== 0 ? cell : ''}
+                          </div>
+                        )}
+                        {marks && (
+                          <div className="pencil-marks">
+                            {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(num => {
+                              const hasNumber = Array.from(pencilMarks[cellKey]).includes(num);
+                              return (
+                                <div key={num} className="pencil-mark">
+                                  {hasNumber ? num : ''}
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </td>
+                    );
+                  })}
                 </tr>
               ))}
             </tbody>
           </table>
-        </>
+        </div>
       ) : (
         <p>Loading puzzle...</p>
       )}
+      <div className="submit-button">
+        <button onClick={handleSubmit}>Submit</button>
+      </div>
     </div>
   );
 }
