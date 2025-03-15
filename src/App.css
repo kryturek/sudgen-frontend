@@ -32,11 +32,15 @@
   height: 60px;
   background-color: var(--bg-color);
   border-bottom: 1px solid var(--grid-border);
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr;
   align-items: center;
-  justify-content: space-between;
   padding: 0 20px;
   z-index: 100;
+}
+
+.navbar-brand {
+  justify-self: start;
 }
 
 .navbar-brand h1 {
@@ -46,11 +50,13 @@
 }
 
 .navbar-menu {
+  justify-self: center;
   display: flex;
   gap: 10px;
 }
 
 .navbar-end {
+  justify-self: end;
   display: flex;
   align-items: center;
   gap: 15px;
