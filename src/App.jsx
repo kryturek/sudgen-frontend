@@ -177,9 +177,15 @@ function App() {
     if (!focusedCell) return '';
     
     const [focusedRow, focusedCol] = focusedCell;
+    const focusedNumber = puzzle[focusedRow][focusedCol];
     
     // Check if cell is the focused one
     if (rowIndex === focusedRow && cellIndex === focusedCol) {
+      return 'highlight-focus';
+    }
+    
+    // Check if cell has the same number as the focused cell
+    if (focusedNumber !== 0 && puzzle[rowIndex][cellIndex] === focusedNumber) {
       return 'highlight-focus';
     }
     
