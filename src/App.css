@@ -226,3 +226,52 @@ button:hover {
   margin: 5px 0 15px 0;
   font-style: italic;
 }
+
+.preview-grid {
+  margin: 20px auto;
+  display: grid;
+  grid-template-rows: repeat(9, 1fr);
+  gap: 1px;
+  background: var(--grid-border);
+  padding: 2px;
+  width: 200px;
+  border: 1px solid var(--grid-border-thick);
+}
+
+.preview-row {
+  display: grid;
+  grid-template-columns: repeat(9, 1fr);
+  gap: 1px;
+}
+
+.preview-cell {
+  background: var(--bg-color);
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  color: var(--text-color);
+  position: relative;
+}
+
+/* Add thick borders for 3x3 boxes */
+.preview-cell:nth-child(3n)::after {
+  content: '';
+  position: absolute;
+  right: -2px;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--grid-border-thick);
+}
+
+.preview-row:nth-child(3n)::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: var(--grid-border-thick);
+}

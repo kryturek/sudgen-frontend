@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './App.css';
+import { getMockPuzzle } from './mockPuzzles';
 
 function App() {
   const [puzzle, setPuzzle] = useState(null);
@@ -15,6 +16,7 @@ function App() {
   // Add new state variables
   const [showDialog, setShowDialog] = useState(false);
   const [removalsCount, setRemovalsCount] = useState(30);
+  const [previewPuzzle, setPreviewPuzzle] = useState(null);
 
   useEffect(() => {
     document.body.classList.toggle('dark-mode', isDarkMode);
@@ -159,6 +161,12 @@ function App() {
   const handleDialogConfirm = () => {
     setShowDialog(false);
     fetchPuzzle(removalsCount); // Only generate puzzle when Start is clicked
+  };
+
+  // Update removalsCount handler to show preview
+  const handleRemovalsChange = (newCount) => {
+    setRemovalsCount(newCount);
+    setPreviewPuzzle(getMockPuzzle(newCount));
   };
 
   useEffect(() => {
@@ -341,9 +349,20 @@ function App() {
                   min="12"
                   max="58"
                   value={removalsCount}
-                  onChange={(e) => setRemovalsCount(parseInt(e.target.value))}
+                  onChange={(e) => handleRemovalsChange(parseInt(e.target.value))}
                 />
               </label>
+            </div>
+            <div className="preview-grid">
+              {previewPuzzle && previewPuzzle.map((row, rowIndex) => (
+                <div key={rowIndex} className="preview-row">
+                  {row.map((cell, cellIndex) => (
+                    <div key={cellIndex} className="preview-cell">
+                      {cell || ''}
+                    </div>
+                  ))}
+                </div>
+              ))}
             </div>
             <div className="dialog-buttons">
               <button onClick={() => setShowDialog(false)}>Cancel</button>
