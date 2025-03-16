@@ -29,37 +29,46 @@
   top: 0;
   left: 0;
   right: 0;
-  height: 60px;
+  height: 70px; /* Increased height */
   background-color: var(--bg-color);
   border-bottom: 1px solid var(--grid-border);
   display: grid;
-  grid-template-columns: 1fr 2fr 1fr;
+  grid-template-columns: auto 1fr auto;
   align-items: center;
   padding: 0 20px;
+  gap: 20px; /* Add gap to prevent content touching */
   z-index: 100;
 }
 
 .navbar-brand {
-  justify-self: start;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  border-right: none; /* Remove any potential border */
 }
 
 .navbar-brand h1 {
   margin: 0;
   font-size: 1.5em;
   color: var(--text-color);
+  line-height: 70px; /* Match navbar height */
 }
 
 .navbar-menu {
-  justify-self: center;
+  height: 100%;
   display: flex;
-  gap: 10px;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  border-right: none; /* Remove any potential border */
 }
 
 .navbar-end {
-  justify-self: end;
+  height: 100%;
   display: flex;
   align-items: center;
   gap: 15px;
+  border-left: none; /* Remove any potential border */
 }
 
 .username {
@@ -78,6 +87,12 @@
 .auth-button:hover {
   background-color: var(--text-color);
   color: var(--bg-color);
+}
+
+.navbar button {
+  padding: 8px 16px;
+  height: 36px; /* Explicit height for buttons */
+  line-height: 20px; /* Adjust line height for text centering */
 }
 
 #root {
@@ -112,7 +127,7 @@ body {
   height: 100%;
   box-sizing: border-box;
   max-width: 90vw;
-  padding-top: 80px; /* navbar height + 20px */
+  padding-top: 90px; /* new navbar height + 20px */
 }
 
 .buttons {
@@ -397,6 +412,230 @@ button:hover {
 }
 
 .auth-toggle button:hover {
-  color: var(--text-color);
+  color: var (--text-color);
   background: none;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .App {
+    padding-top: 60px;
+    max-width: 100vw;
+  }
+
+  .puzzle td {
+    width: 35px;
+    height: 35px;
+  }
+
+  .puzzle input,
+  .puzzle div {
+    font-size: 18px;
+  }
+
+  .navbar {
+    grid-template-columns: auto 1fr auto;
+  }
+
+  .navbar-menu {
+    display: none;
+  }
+
+  .navbar-end {
+    justify-self: end;
+  }
+
+  .navbar-end .username,
+  .navbar-end .auth-button {
+    display: none;
+  }
+
+  .hamburger-container {
+    display: block;
+    margin-left: auto;
+  }
+}
+
+@media (min-width: 769px) {
+  .hamburger-container {
+    display: none;
+  }
+
+  .navbar-menu {
+    display: flex;
+  }
+
+  .navbar-end {
+    display: flex;
+  }
+}
+
+/* Hamburger Menu Styles */
+.hamburger-container {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .hamburger-container {
+    display: block;
+  }
+  
+  .hamburger {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    width: 30px;
+    height: 25px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    z-index: 110;
+  }
+
+  .hamburger span {
+    width: 30px;
+    height: 3px;
+    background: var(--text-color);
+    transition: all 0.3s;
+    position: relative;
+    transform-origin: 1px;
+  }
+
+  .hamburger.open span:first-child {
+    transform: rotate(45deg);
+  }
+
+  .hamburger.open span:nth-child(2) {
+    opacity: 0;
+  }
+
+  .hamburger.open span:nth-child(3) {
+    transform: rotate(-45deg);
+  }
+}
+
+@media (min-width: 769px) {
+  .hamburger-container {
+    display: none;
+  }
+
+  .navbar-menu {
+    justify-self: center;
+    display: flex;
+    gap: 20px;
+  }
+
+  .number-pad {
+    display: none;
+  }
+}
+
+.menu-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: none;
+  z-index: 100;
+}
+
+.menu-overlay.show {
+  display: block;
+}
+
+.menu-content {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 250px;
+  height: 100%;
+  background: var(--bg-color);
+  padding: 60px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.menu-item {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  background: transparent;
+  color: var(--text-color);
+  text-align: left;
+  font-size: 1.1em;
+  cursor: pointer;
+}
+
+.menu-item:hover {
+  background: var(--grid-border);
+}
+
+.menu-user {
+  padding: 12px;
+  color: var(--text-color);
+  font-weight: bold;
+  border-bottom: 1px solid var(--grid-border);
+}
+
+/* Number Pad Styles */
+.number-pad {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .number-pad {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 15px;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--bg-color);
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+  }
+
+  .number-pad-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+
+  .number-button {
+    padding: 15px;
+    font-size: 1.2em;
+    border: 1px solid var(--grid-border);
+    background: var(--bg-color);
+    color: var(--text-color);
+    border-radius: 8px;
+  }
+
+  .number-button:active {
+    background: var(--grid-border);
+  }
+
+  .pencil-mode-toggle {
+    width: 100%;
+    padding: 12px;
+    margin-top: 8px;
+    border: 1px solid var(--grid-border);
+    background: var(--bg-color);
+    color: var(--text-color);
+    border-radius: 8px;
+  }
+
+  .pencil-mode-toggle.active {
+    background: var(--text-color);
+    color: var(--bg-color);
+  }
+
+  /* Adjust puzzle container for number pad */
+  .puzzle-container {
+    margin-bottom: 180px;
+  }
 }

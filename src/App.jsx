@@ -4,6 +4,8 @@ import { getMockPuzzle } from './mockPuzzles';
 import { AuthDialog } from './components/AuthDialog';
 import { useAuth } from './context/AuthContext';
 import { Navbar } from './components/Navbar';
+import HamburgerMenu from './components/HamburgerMenu';
+import NumberPad from './components/NumberPad';
 
 function App() {
   const [puzzle, setPuzzle] = useState(null);
@@ -21,7 +23,9 @@ function App() {
   const [removalsCount, setRemovalsCount] = useState(30);
   const [previewPuzzle, setPreviewPuzzle] = useState(null);
   const [showAuthDialog, setShowAuthDialog] = useState(false);
-  const { isAuthenticated, saveGame } = useAuth();
+  const { isAuthenticated, saveGame, user, logout } = useAuth();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [isPencilMode, setIsPencilMode] = useState(false);
 
   useEffect(() => {
     document.body.classList.toggle('dark-mode', isDarkMode);
@@ -282,6 +286,42 @@ function App() {
     return descriptions[closest];
   };
 
+  // Add new handler for number pad input
+  const handleNumberPadInput = (number) => {
+    if (!focusedCell) return;
+    const [rowIndex, cellIndex] = focusedCell;
+    
+    if (isPencilMode && number !== 0) {
+      const cellKey = `${rowIndex}-${cellIndex}`;
+      setPencilMarks(prevMarks => {
+        const newMarks = { ...prevMarks };
+        const currentMarks = newMarks[cellKey] ? Array.from(newMarks[cellKey]) : [];
+        const markIndex = currentMarks.indexOf(number);
+        
+        if (markIndex === -1) {
+          currentMarks.push(number);
+        } else {
+          currentMarks.splice(markIndex, 1);
+        }
+        
+        if (currentMarks.length === 0) {
+          delete newMarks[cellKey];
+        } else {
+          newMarks[cellKey] = new Set(currentMarks);
+        }
+        return newMarks;
+      });
+    } else {
+      handleNumberInput(rowIndex, cellIndex, number);
+    }
+  };
+
+  // Add logout handler
+  const handleLogout = async () => {
+    await logout();
+    setMenuOpen(false);  // Close menu if open
+  };
+
   return (
     <div className="App" style={{ height: '100vh' }}>
       <Navbar
@@ -289,9 +329,15 @@ function App() {
         onDarkModeToggle={() => setIsDarkMode(!isDarkMode)}
         onNewGame={handleNewGame}
         onAuthClick={() => setShowAuthDialog(true)}
-        onSolve={handleSolve}    // Add this
-        isSolved={isSolved}      // Add this
+        onLogout={handleLogout}  // Add this
+        onSolve={handleSolve}
+        isSolved={isSolved}
+        isAuthenticated={isAuthenticated}
+        username={user?.username}  // Add this
+        menuOpen={menuOpen}
+        setMenuOpen={setMenuOpen}
       />
+      
       {puzzle ? (
         <div className="puzzle-container">
           <table className="puzzle">
@@ -426,6 +472,11 @@ function App() {
       <AuthDialog 
         isOpen={showAuthDialog}
         onClose={() => setShowAuthDialog(false)}
+      />
+      <NumberPad
+        onNumberClick={handleNumberPadInput}
+        isPencilMode={isPencilMode}
+        onPencilModeToggle={() => setIsPencilMode(!isPencilMode)}
       />
     </div>
   );
