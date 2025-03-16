@@ -24,6 +24,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const checkAuth = async () => {
+    // Don't check if we're already authenticated
+    if (authState.isAuthenticated) return;
+    
     try {
       const response = await fetch('http://localhost:8000/auth/session', {
         credentials: 'include'
@@ -33,7 +36,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setAuthState({
           user: data.user,
           isAuthenticated: true,
-          savedGames: data.savedGames
+          savedGames: data.savedGames || [] // Add default empty array
         });
       }
     } catch (error) {
@@ -65,14 +68,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const response = await fetch('http://localhost:8000/auth/register', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
       body: JSON.stringify({ username, email, password })
     });
 
+    const data = await response.json();
+    
     if (!response.ok) {
-      throw new Error('Registration failed');
+      throw new Error(data.detail || 'Registration failed');
     }
 
-    await login(email, password);
+    setAuthState({
+      user: data.user,
+      isAuthenticated: true,
+      savedGames: []
+    });
   };
 
   const logout = async () => {

@@ -11,20 +11,31 @@ export function AuthDialog({ isOpen, onClose }: AuthDialogProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [username, setUsername] = useState('');
+  const [error, setError] = useState('');
   const { login, register } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError(''); // Clear previous errors
+    
     try {
       if (isLogin) {
         await login(email, password);
       } else {
+        if (password.length < 6) {
+          setError('Password must be at least 6 characters long');
+          return;
+        }
+        if (username.length < 3) {
+          setError('Username must be at least 3 characters long');
+          return;
+        }
         await register(username, email, password);
       }
       onClose();
     } catch (error) {
       console.error('Auth error:', error);
-      alert('Authentication failed');
+      setError(error instanceof Error ? error.message : 'Authentication failed');
     }
   };
 
@@ -34,6 +45,7 @@ export function AuthDialog({ isOpen, onClose }: AuthDialogProps) {
     <div className="dialog-overlay">
       <div className="dialog auth-dialog">
         <h2>{isLogin ? 'Welcome Back' : 'Create Account'}</h2>
+        {error && <div className="error-message">{error}</div>}
         <form onSubmit={handleSubmit}>
           {!isLogin && (
             <div className="form-group">

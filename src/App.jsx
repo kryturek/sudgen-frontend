@@ -31,17 +31,41 @@ function App() {
     document.body.classList.toggle('dark-mode', isDarkMode);
   }, [isDarkMode]);
 
+  // Function to save game state to localStorage
+  const saveToLocalStorage = (gameState) => {
+    localStorage.setItem('sudokuGameState', JSON.stringify({
+      puzzle: gameState.puzzle,
+      solution: gameState.solution,
+      originalPuzzle: gameState.originalPuzzle,
+      userPuzzle: gameState.userPuzzle,
+      pencilMarks: gameState.pencilMarks,
+      removalsCount: gameState.removalsCount,
+      startedAt: new Date().toISOString(),
+    }));
+  };
+
   // Function to fetch puzzle from the FastAPI endpoint
   const fetchPuzzle = async (removals) => {
     try {
       const response = await fetch(`http://localhost:8000/sudoku?removals=${removals}`);
       const data = await response.json();
+      const gameState = {
+        puzzle: data.puzzle,
+        solution: data.solution,
+        originalPuzzle: data.puzzle,
+        userPuzzle: data.puzzle,
+        pencilMarks: {},
+        removalsCount: removals,
+      };
+      
       setPuzzle(data.puzzle);
       setSolution(data.solution);
       setOriginalPuzzle(data.puzzle);
       setUserPuzzle(data.puzzle);
       setIsSolved(false);
       setPencilMarks({});
+      
+      saveToLocalStorage(gameState);
     } catch (error) {
       console.error('Error fetching puzzle:', error);
     }
@@ -57,7 +81,7 @@ function App() {
     setIsSolved(!isSolved);
   };
 
-  const handleNumberInput = (rowIndex, cellIndex, number) => {
+  const handleNumberInput = async (rowIndex, cellIndex, number) => {
     // Check if the cell is part of the original puzzle
     if (originalPuzzle[rowIndex][cellIndex] !== 0) {
       return; // Don't allow changes to original numbers
@@ -68,10 +92,41 @@ function App() {
     );
     setPuzzle(newPuzzle);
     const cellKey = `${rowIndex}-${cellIndex}`;
-    if (pencilMarks[cellKey]) {
-      const newMarks = { ...pencilMarks };
-      delete newMarks[cellKey];
-      setPencilMarks(newMarks);
+    
+    // Create a copy of current pencil marks
+    const updatedPencilMarks = { ...pencilMarks };
+    
+    // Remove pencil marks for this cell if they exist
+    if (updatedPencilMarks[cellKey]) {
+      delete updatedPencilMarks[cellKey];
+    }
+
+    setPencilMarks(updatedPencilMarks);
+
+    // Save current state to localStorage
+    saveToLocalStorage({
+      puzzle: newPuzzle,
+      solution,
+      originalPuzzle,
+      userPuzzle,
+      pencilMarks: updatedPencilMarks,
+      removalsCount,
+    });
+
+    if (isAuthenticated) {
+      try {
+        await saveGame({
+          puzzle: newPuzzle,
+          solution,
+          pencil_marks: updatedPencilMarks,
+          difficulty: removalsCount,
+          started_at: new Date(),
+          last_played: new Date(),
+          completed: false
+        });
+      } catch (error) {
+        console.error('Error saving game state:', error);
+      }
     }
   };
 
@@ -202,7 +257,9 @@ function App() {
     }
   };
 
+  // Add cleanup for localStorage when starting new game
   const handleNewGame = () => {
+    localStorage.removeItem('sudokuGameState');
     setShowDialog(true);
     // Initialize preview with current removalsCount
     setPreviewPuzzle(getMockPuzzle(removalsCount));
@@ -219,9 +276,65 @@ function App() {
     setPreviewPuzzle(getMockPuzzle(newCount));
   };
 
+  // Modify the initial loading useEffect
   useEffect(() => {
-    fetchPuzzle(30); // Initial puzzle load only
-  }, []); 
+    // First try to load from localStorage
+    const savedState = localStorage.getItem('sudokuGameState');
+    if (savedState) {
+      const {
+        puzzle: savedPuzzle,
+        solution: savedSolution,
+        originalPuzzle: savedOriginalPuzzle,
+        userPuzzle: savedUserPuzzle,
+        pencilMarks: savedPencilMarks,
+        removalsCount: savedRemovalsCount,
+      } = JSON.parse(savedState);
+
+      setPuzzle(savedPuzzle);
+      setSolution(savedSolution);
+      setOriginalPuzzle(savedOriginalPuzzle);
+      setUserPuzzle(savedUserPuzzle);
+      setPencilMarks(savedPencilMarks || {});
+      setRemovalsCount(savedRemovalsCount);
+      return; // Exit early if we loaded from localStorage
+    }
+
+    // If no localStorage and authenticated, try to load from server
+    if (isAuthenticated) {
+      fetch('http://localhost:8000/auth/session', {
+        credentials: 'include'
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.currentGame) {
+          const gameState = {
+            puzzle: data.currentGame.puzzle,
+            solution: data.currentGame.solution,
+            originalPuzzle: data.currentGame.puzzle,
+            userPuzzle: data.currentGame.puzzle,
+            pencilMarks: data.currentGame.pencil_marks || {},
+            removalsCount: data.currentGame.difficulty,
+          };
+          setPuzzle(data.currentGame.puzzle);
+          setSolution(data.currentGame.solution);
+          setOriginalPuzzle(data.currentGame.puzzle);
+          setUserPuzzle(data.currentGame.puzzle);
+          setPencilMarks(data.currentGame.pencil_marks || {});
+          setRemovalsCount(data.currentGame.difficulty);
+          saveToLocalStorage(gameState); // Save server game to localStorage
+        } else {
+          fetchPuzzle(30); // Only fetch new if no saved game exists
+        }
+      })
+      .catch(error => {
+        console.error('Error fetching current game:', error);
+        fetchPuzzle(30);
+      });
+    } else {
+      // If not authenticated and no localStorage, fetch new puzzle
+      fetchPuzzle(30);
+    }
+  }, [isAuthenticated]); // Only run when auth state changes
 
   const getHighlightClass = (rowIndex, cellIndex) => {
     if (!focusedCell) return '';
