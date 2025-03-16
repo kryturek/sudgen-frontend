@@ -261,7 +261,7 @@ function App() {
   const handleNewGame = () => {
     localStorage.removeItem('sudokuGameState');
     setShowDialog(true);
-    // Initialize preview with current removalsCount
+    setMenuOpen(false); // Add this line to close the menu
     setPreviewPuzzle(getMockPuzzle(removalsCount));
   };
 

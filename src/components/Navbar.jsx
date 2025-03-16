@@ -8,7 +8,7 @@ export const Navbar = ({
   onAuthClick, 
   onLogout,
   onSolve,
-  isSolved,
+//   isSolved,
   isAuthenticated,
   username,
   menuOpen,
