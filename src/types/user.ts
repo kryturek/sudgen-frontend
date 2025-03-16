@@ -8,14 +8,16 @@ export interface User {
 }
 
 export interface SavedGame {
-  id: string;
+  id?: number;
+  user_id?: number;
   puzzle: number[][];
   solution: number[][];
-  pencilMarks: Record<string, Set<number>>;
+  pencil_marks: Record<string, number[]>;  // Changed from Set<number>
   difficulty: number;
-  startedAt: Date;
-  lastPlayed: Date;
+  started_at: string;  // Changed from Date to string
+  last_played: string; // Changed from Date to string
   completed: boolean;
+  created_at?: string;
 }
 
 export interface AuthState {

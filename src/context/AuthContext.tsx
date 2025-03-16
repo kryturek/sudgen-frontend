@@ -11,6 +11,8 @@ interface AuthContextType extends AuthState {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [authState, setAuthState] = useState<AuthState>({
     user: null,
@@ -28,7 +30,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (authState.isAuthenticated) return;
     
     try {
-      const response = await fetch('http://localhost:8000/auth/session', {
+      const response = await fetch(`${API_URL}/auth/session`, {
         credentials: 'include'
       });
       if (response.ok) {
@@ -45,7 +47,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const login = async (email: string, password: string) => {
-    const response = await fetch('http://localhost:8000/auth/login', {
+    const response = await fetch(`${API_URL}/auth/login`, {
       method: 'POST',
       credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
@@ -65,7 +67,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const register = async (username: string, email: string, password: string) => {
-    const response = await fetch('http://localhost:8000/auth/register', {
+    const response = await fetch(`${API_URL}/auth/register`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
@@ -86,7 +88,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const logout = async () => {
-    await fetch('http://localhost:8000/auth/logout', {
+    await fetch(`${API_URL}/auth/logout`, {
       method: 'POST',
       credentials: 'include'
     });
@@ -94,7 +96,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const saveGame = async (game: Omit<SavedGame, 'id'>) => {
-    const response = await fetch('http://localhost:8000/games/save', {
+    const response = await fetch(`${API_URL}/games/save`, {
       method: 'POST',
       credentials: 'include',
       headers: { 'Content-Type': 'application/json' },
@@ -113,7 +115,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const loadGame = async (gameId: string) => {
-    const response = await fetch(`http://localhost:8000/games/${gameId}`, {
+    const response = await fetch(`${API_URL}/games/${gameId}`, {
       credentials: 'include'
     });
 

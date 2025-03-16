@@ -114,14 +114,20 @@ function App() {
     });
 
     if (isAuthenticated) {
+      // Convert pencil marks to array format before saving
+      const processedPencilMarks = {};
+      Object.entries(updatedPencilMarks).forEach(([key, value]) => {
+        processedPencilMarks[key] = Array.from(value);
+      });
+
       try {
         await saveGame({
           puzzle: newPuzzle,
           solution,
-          pencil_marks: updatedPencilMarks,
+          pencil_marks: processedPencilMarks,
           difficulty: removalsCount,
-          started_at: new Date(),
-          last_played: new Date(),
+          started_at: new Date().toISOString(),
+          last_played: new Date().toISOString(),
           completed: false
         });
       } catch (error) {
@@ -241,16 +247,25 @@ function App() {
     if (puzzleString === solutionString) {
       alert('Congratulations! You solved the puzzle correctly.');
       if (isAuthenticated && puzzleString === solutionString) {
-        // Save completed game
-        await saveGame({
-          puzzle,
-          solution,
-          pencilMarks,
-          difficulty: removalsCount,
-          startedAt: new Date(),
-          lastPlayed: new Date(),
-          completed: true
+        // Convert pencil marks to array format before saving
+        const processedPencilMarks = {};
+        Object.entries(pencilMarks).forEach(([key, value]) => {
+          processedPencilMarks[key] = Array.from(value);
         });
+
+        try {
+          await saveGame({
+            puzzle: cleanedPuzzle,
+            solution,
+            pencil_marks: processedPencilMarks,
+            difficulty: removalsCount,
+            started_at: new Date().toISOString(),
+            last_played: new Date().toISOString(),
+            completed: true
+          });
+        } catch (error) {
+          console.error('Error saving completed game:', error);
+        }
       }
     } else {
       alert('Incorrect solution. Please try again.');
