@@ -170,41 +170,48 @@ function App() {
     // Rest of the existing handleKeyDown logic for non-original numbers
     if (e.shiftKey) {
       const pencilNumber = getPencilMarkNumber(e.key);
-      // Check if the cell is empty (no number) before allowing pencil marks
-      if (pencilNumber && puzzle[rowIndex][cellIndex] === 0) {
+      if (pencilNumber && !e.key.startsWith('Arrow')) {
+        // Check if the cell is empty (no number) before allowing pencil marks
+        if (puzzle[rowIndex][cellIndex] === 0) {
+          e.preventDefault();
+          const mark = pencilNumber;
+          const cellKey = `${rowIndex}-${cellIndex}`;
+          setPencilMarks(prevMarks => {
+            const newMarks = { ...prevMarks };
+            const currentMarks = newMarks[cellKey] ? Array.from(newMarks[cellKey]) : [];
+            const markIndex = currentMarks.indexOf(mark);
+            if (markIndex === -1) {
+              currentMarks.push(mark);
+            } else {
+              currentMarks.splice(markIndex, 1);
+            }
+            if (currentMarks.length === 0) {
+              delete newMarks[cellKey];
+            } else {
+              newMarks[cellKey] = new Set(currentMarks);
+            }
+            return newMarks;
+          });
+        }
+      } else {
+        // Arrow navigation to the next editable empty cell
         e.preventDefault();
-        const mark = pencilNumber;
-        const cellKey = `${rowIndex}-${cellIndex}`;
-        setPencilMarks(prevMarks => {
-          const newMarks = { ...prevMarks };
-          const currentMarks = newMarks[cellKey] ? Array.from(newMarks[cellKey]) : [];
-          const markIndex = currentMarks.indexOf(mark);
-          
-          if (markIndex === -1) {
-            currentMarks.push(mark);
-          } else {
-            currentMarks.splice(markIndex, 1);
+        const directionMap = {
+          ArrowUp: [-1, 0],
+          ArrowDown: [1, 0],
+          ArrowLeft: [0, -1],
+          ArrowRight: [0, 1],
+        };
+        const [dRow, dCol] = directionMap[e.key] || [0, 0];
+        for (let i = 1; i < 9; i++) {
+          const r = rowIndex + dRow * i;
+          const c = cellIndex + dCol * i;
+          if (r < 0 || r > 8 || c < 0 || c > 8) break;
+          if (originalPuzzle[r][c] === 0 && puzzle[r][c] === 0) {
+            inputRefs.current[r * 9 + c].focus();
+            break;
           }
-          
-          if (currentMarks.length === 0) {
-            delete newMarks[cellKey];
-          } else {
-            newMarks[cellKey] = new Set(currentMarks);
-          }
-          return newMarks;
-        });
-      } else if (e.key === 'ArrowUp' && rowIndex > 2) {
-        e.preventDefault();
-        inputRefs.current[(rowIndex - 3) * 9 + cellIndex].focus();
-      } else if (e.key === 'ArrowDown' && rowIndex < 6) {
-        e.preventDefault();
-        inputRefs.current[(rowIndex + 3) * 9 + cellIndex].focus();
-      } else if (e.key === 'ArrowLeft' && cellIndex > 2) {
-        e.preventDefault();
-        inputRefs.current[rowIndex * 9 + (cellIndex - 3)].focus();
-      } else if (e.key === 'ArrowRight' && cellIndex < 6) {
-        e.preventDefault();
-        inputRefs.current[rowIndex * 9 + (cellIndex + 3)].focus();
+        }
       }
     } else {
       if (e.key >= '1' && e.key <= '9') {
