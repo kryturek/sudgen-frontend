@@ -426,14 +426,46 @@ function App() {
       56: "Only for the brave",
       58: "Beyond human limits"
     };
+
+    
     // Find the closest difficulty level
     const levels = Object.keys(descriptions).map(Number);
     const closest = levels.reduce((prev, curr) => 
       Math.abs(curr - removals) < Math.abs(prev - removals) ? curr : prev
-    );
-    return descriptions[closest];
-  };
+  );
+  return descriptions[closest];
+};
 
+const checkConflict = (rowIndex, cellIndex) => {
+  const value = puzzle[rowIndex][cellIndex];
+  if (value === 0) return false;
+
+  // Check row
+  for (let c = 0; c < 9; c++) {
+    if (c !== cellIndex && puzzle[rowIndex][c] === value) {
+      return true;
+    }
+  }
+
+  // Check column
+  for (let r = 0; r < 9; r++) {
+    if (r !== rowIndex && puzzle[r][cellIndex] === value) {
+      return true;
+    }
+  }
+
+  // Check 3x3 block
+  const startRow = Math.floor(rowIndex / 3) * 3;
+  const startCol = Math.floor(cellIndex / 3) * 3;
+  for (let r = startRow; r < startRow + 3; r++) {
+    for (let c = startCol; c < startCol + 3; c++) {
+      if ((r !== rowIndex || c !== cellIndex) && puzzle[r][c] === value) {
+        return true;
+      }
+    }
+  }
+  return false;
+};
   // Add new handler for number pad input
   const handleNumberPadInput = (number) => {
     if (!focusedCell) return;
@@ -498,7 +530,7 @@ function App() {
                     return (
                       <td
                         key={cellIndex}
-                        className={getHighlightClass(rowIndex, cellIndex)}
+                        className={`${getHighlightClass(rowIndex, cellIndex)} ${checkConflict(rowIndex, cellIndex) ? 'error' : ''}`}
                         style={{
                           width: '50px',
                           height: '50px',

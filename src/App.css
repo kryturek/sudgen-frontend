@@ -232,6 +232,11 @@ body {
   background-color: var(--highlight-related);
 }
 
+.error {
+  background-color: #ffcccc;  /* Light red background */
+  color: #a00;                /* Dark red text */
+}
+
 button {
   background-color: var(--bg-color);
   color: var(--text-color);
