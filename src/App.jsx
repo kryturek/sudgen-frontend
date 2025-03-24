@@ -47,7 +47,7 @@ function App() {
   // Function to fetch puzzle from the FastAPI endpoint
   const fetchPuzzle = async (removals) => {
     try {
-      const response = await fetch(`http://localhost:8000/sudoku?removals=${removals}`);
+      const response = await fetch(`https://sudgen.onrender.com/sudoku?removals=${removals}`);
       const data = await response.json();
       const gameState = {
         puzzle: data.puzzle,
@@ -323,7 +323,7 @@ function App() {
 
     // If no localStorage and authenticated, try to load from server
     if (isAuthenticated) {
-      fetch('http://localhost:8000/auth/session', {
+      fetch('https://sudgen.onrender.com/auth/session', {
         credentials: 'include'
       })
       .then(response => response.json())
