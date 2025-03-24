@@ -535,8 +535,8 @@ const checkConflict = (rowIndex, cellIndex) => {
                         key={cellIndex}
                         className={`${getHighlightClass(rowIndex, cellIndex)} ${checkConflict(rowIndex, cellIndex) ? 'error' : ''}`}
                         style={{
-                          width: '50px',
-                          height: '50px',
+                          // width: '50px',
+                          // height: '50px',
                           textAlign: 'center',
                           verticalAlign: 'middle',
                           borderTop: rowIndex % 3 === 0 ? '2px solid var(--grid-border-thick)' : '1px solid var(--grid-border)',
@@ -553,7 +553,7 @@ const checkConflict = (rowIndex, cellIndex) => {
                             style={{
                               width: '100%',
                               height: '100%',
-                              lineHeight: '50px',
+                              // lineHeight: '50px',
                               color: 'var(--text-color)',
                             }}
                             tabIndex={-1}
@@ -572,7 +572,7 @@ const checkConflict = (rowIndex, cellIndex) => {
                             style={{
                               width: '100%',
                               height: '100%',
-                              lineHeight: '50px',
+                              // lineHeight: '50px',
                               textAlign: 'center',
                               border: 'none',
                               outline: 'none',
