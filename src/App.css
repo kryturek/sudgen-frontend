@@ -232,6 +232,7 @@ body {
   align-items: center;
   justify-content: center;
   font-size: 10px !important;
+  line-height: 10px !important;
 }
 
 .puzzle td.highlight-focus {
@@ -639,10 +640,10 @@ button.hamburger:hover {
   }
 }
 
-@media (max-width: 380px) {
+@media (max-width: 420px) {
   
     .puzzle td {
-      line-height: 35px;
+      line-height: 40px;
     }
   
     .puzzle input,
@@ -652,6 +653,7 @@ button.hamburger:hover {
   
     .pencil-mark {
       font-size: 10px !important;
+      line-height: 10px !important;
     }
 
   .number-pad {
