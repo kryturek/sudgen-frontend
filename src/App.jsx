@@ -47,6 +47,8 @@ function App() {
   // Function to fetch puzzle from the FastAPI endpoint
   const fetchPuzzle = async (removals) => {
     try {
+
+      // const response = await fetch(`http://localhost:8000/sudoku?removals=${removals}`);
       const response = await fetch(`https://sudgen.onrender.com/sudoku?removals=${removals}`);
       const data = await response.json();
       const gameState = {
@@ -337,6 +339,7 @@ function App() {
     // If no localStorage and authenticated, try to load from server
     if (isAuthenticated) {
       fetch('https://sudgen.onrender.com/auth/session', {
+      // fetch('http://localhost:8000/auth/session', {
         credentials: 'include'
       })
       .then(response => response.json())
@@ -536,7 +539,6 @@ const checkConflict = (rowIndex, cellIndex) => {
                           height: '50px',
                           textAlign: 'center',
                           verticalAlign: 'middle',
-                          fontSize: '24px',
                           borderTop: rowIndex % 3 === 0 ? '2px solid var(--grid-border-thick)' : '1px solid var(--grid-border)',
                           borderLeft: cellIndex % 3 === 0 ? '2px solid var(--grid-border-thick)' : '1px solid var(--grid-border)',
                           borderRight: (cellIndex + 1) % 3 === 0 ? '2px solid var(--grid-border-thick)' : '1px solid var(--grid-border)',
@@ -572,7 +574,6 @@ const checkConflict = (rowIndex, cellIndex) => {
                               height: '100%',
                               lineHeight: '50px',
                               textAlign: 'center',
-                              fontSize: '24px',
                               border: 'none',
                               outline: 'none',
                               padding: 0,

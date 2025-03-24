@@ -10,22 +10,28 @@ const NumberPad = ({ onNumberClick, isPencilMode, onPencilModeToggle }) => {
           <button
             key={num}
             className="number-button"
+            onMouseDown={(e) => e.preventDefault()}
             onClick={() => onNumberClick(num)}
           >
             {num}
           </button>
         ))}
-        <button className="number-button" onClick={() => onNumberClick(0)}>
+        <button
+          className="number-button"
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={() => onNumberClick(0)}
+        >
           Clear
         </button>
-      </div>
-      <div className="number-pad-controls">
-        <button
-          className={`pencil-mode-toggle ${isPencilMode ? 'active' : ''}`}
-          onClick={onPencilModeToggle}
-        >
+        <div className="number-pad-controls" style={{gridColumn: 'span 2'}}>
+          <button
+            className={`pencil-mode-toggle ${isPencilMode ? 'active' : ''}`}
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={onPencilModeToggle}
+          >
           ✎ Pencil Mode
         </button>
+      </div>
       </div>
     </div>
   );
