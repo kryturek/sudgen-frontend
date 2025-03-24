@@ -214,6 +214,19 @@ function App() {
         }
       }
     } else {
+      const keyToNumber = {
+        q: 1, w: 2, e: 3,
+        a: 4, s: 5, d: 6,
+        z: 7, x: 8, c: 9,
+      };
+      
+      const lowercaseKey = e.key.toLowerCase();
+      if (!e.shiftKey && keyToNumber[lowercaseKey]) {
+        e.preventDefault();
+        handleNumberInput(rowIndex, cellIndex, keyToNumber[lowercaseKey]);
+        return;
+      }
+      
       if (e.key >= '1' && e.key <= '9') {
         e.preventDefault();
         handleNumberInput(rowIndex, cellIndex, parseInt(e.key, 10));
