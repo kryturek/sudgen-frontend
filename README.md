@@ -1,12 +1,43 @@
-# React + Vite
+# Sudgen - Sudoku Generator & Solver
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Sudgen is a Sudoku web app built with React on the frontend and FastAPI on the backend. It allows users to generate puzzles, solve them, track progress, and enjoy helpful features like pencil marks and keyboard support.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Sudoku puzzle generation via a FastAPI backend
+- Adjustable difficulty by setting number of removed cells
+- Save/resume progress (localStorage and optional authentication)
+- Dark mode toggle
+- Pencil mode for marking candidates
+- Fully keyboard-navigable interface
 
-## Expanding the ESLint configuration
+## Controls
 
-If you are developing a production application, we recommend using TypeScript and enable type-aware lint rules. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- Enter numbers using keys `1–9`
+- **Alternative input:** `QWEASDZXC` also work as numbers `1–9`  
+- **Pencil marks:** Hold **Shift** while pressing `QWEASDZXC` to toggle pencil marks
+- Use **Arrow Keys** to navigate
+- Hold **Shift** while navigating to skip non-empty cells
+- Press **Backspace** to erase a cell
+- Press **Enter** to submit your solution
+
+## Backend Endpoint
+
+Hosted at:  
+`https://sudgen.onrender.com/sudoku?removals=30`  
+Adjust the `removals` parameter to control difficulty.
+
+## Development
+
+- **Frontend:** React
+- **Backend:** FastAPI
+- **Frontend Deployment:** GitHub Pages  
+- **Backend Deployment:** Render.com
+
+## Getting Started
+
+```bash
+git clone https://github.com/your-username/sudgen-frontend.git
+cd sudgen-frontend
+npm install
+npm run dev
