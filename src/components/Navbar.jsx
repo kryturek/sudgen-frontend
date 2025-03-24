@@ -17,7 +17,7 @@ export const Navbar = ({
   return (
     <nav className="navbar">
       <div className="navbar-brand">
-        <h1>Sudoku</h1>
+        <h1>Sudgen</h1>
       </div>
       
       <HamburgerMenu

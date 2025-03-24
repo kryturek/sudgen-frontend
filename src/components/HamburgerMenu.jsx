@@ -6,11 +6,11 @@ const HamburgerMenu = ({
   onNewGame, 
   onSolve, 
   onDarkModeToggle, 
-  onAuthClick,
-  onLogout,  // Add this
+  // onAuthClick,
+  // onLogout,  // Add this
   isDarkMode,
-  isAuthenticated,
-  username 
+  // isAuthenticated,
+  // username 
 }) => {
   return (
     <div className="hamburger-container">
@@ -22,7 +22,7 @@ const HamburgerMenu = ({
       
       <div className={`menu-overlay ${isOpen ? 'show' : ''}`} onClick={onToggle}>
         <div className="menu-content" onClick={e => e.stopPropagation()}>
-          {isAuthenticated ? (
+          {/* {isAuthenticated ? (
             <>
               <div className="menu-user">
                 <span>Hi, {username}!</span>
@@ -33,7 +33,7 @@ const HamburgerMenu = ({
             <button className="menu-item" onClick={onAuthClick}>
               Login / Register
             </button>
-          )}
+          )} */}
           
           <button className="menu-item" onClick={onNewGame}>
             New Game
