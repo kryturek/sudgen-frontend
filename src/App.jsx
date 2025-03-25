@@ -23,6 +23,7 @@ function App() {
   const [removalsCount, setRemovalsCount] = useState(30);
   const [previewPuzzle, setPreviewPuzzle] = useState(null);
   const [showAuthDialog, setShowAuthDialog] = useState(false);
+  const [showSolutionDialog, setShowSolutionDialog] = useState(false);
   const { isAuthenticated, saveGame, user, logout } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const [isPencilMode, setIsPencilMode] = useState(false);
@@ -74,13 +75,7 @@ function App() {
   };
 
   const handleSolve = () => {
-    if (isSolved) {
-      setPuzzle(userPuzzle);
-    } else {
-      setUserPuzzle(puzzle);
-      setPuzzle(solution);
-    }
-    setIsSolved(!isSolved);
+    setShowSolutionDialog(true);
   };
 
   const handleNumberInput = async (rowIndex, cellIndex, number) => {
@@ -659,6 +654,43 @@ const checkConflict = (rowIndex, cellIndex) => {
         isPencilMode={isPencilMode}
         onPencilModeToggle={() => setIsPencilMode(!isPencilMode)}
       />
+      {showSolutionDialog && (
+        <div className="dialog-overlay">
+          <div className="dialog">
+            <h2>Solution</h2>
+            <div className="puzzle-container">
+              <table className="puzzle">
+                <tbody>
+                  {solution.map((row, rowIndex) => (
+                    <tr key={rowIndex}>
+                      {row.map((cell, cellIndex) => (
+                      <td
+                        key={cellIndex}
+                        style={{
+                          borderTop: rowIndex % 3 === 0 ? '2px solid var(--grid-border-thick)' : '1px solid var(--grid-border)',
+                          borderLeft: cellIndex % 3 === 0 ? '2px solid var(--grid-border-thick)' : '1px solid var(--grid-border)',
+                          borderRight: (cellIndex + 1) % 3 === 0 ? '2px solid var(--grid-border-thick)' : '1px solid var(--grid-border)',
+                          borderBottom: (rowIndex + 1) % 3 === 0 ? '2px solid var(--grid-border-thick)' : '1px solid var(--grid-border)',
+                          padding: '2px',
+                          textAlign: 'center',
+                          verticalAlign: 'middle',
+                          fontSize: '1.4rem'
+                        }}
+                      >
+                        {cell}
+                      </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="dialog-buttons">
+              <button onClick={() => setShowSolutionDialog(false)}>Close</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

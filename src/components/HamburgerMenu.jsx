@@ -36,11 +36,11 @@ const HamburgerMenu = ({
           )} */}
           
           <button className="menu-item" onClick={onNewGame}>
-            New Game
+            🍎 New Game
           </button>
           
           <button className="menu-item" onClick={onSolve}>
-            Show/Hide Solution
+            ✅ Show Solution
           </button>
           
           <button className="menu-item" onClick={onDarkModeToggle}>
