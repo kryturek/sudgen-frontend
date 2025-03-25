@@ -243,9 +243,22 @@ body {
   background-color: var(--highlight-related);
 }
 
-.error {
-  background-color: #ffcccc;  /* Light red background */
-  color: #a00;                /* Dark red text */
+
+@keyframes errorGlow {
+  from {
+    box-shadow: inset 0 0 5px rgba(255, 0, 0, 0.4);
+  }
+  to {
+    box-shadow: inset 0 0 15px rgba(255, 0, 0, 1);
+  }
+}
+
+.puzzle td.error {
+  background-color: #ffcccc !important;  /* Light red background */
+  color: #a00 !important;                /* Dark red text */
+  animation: errorGlow 0.5s infinite alternate !important;
+  position: relative;
+  z-index: 1;
 }
 
 button {
