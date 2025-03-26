@@ -589,7 +589,7 @@ const checkConflict = (rowIndex, cellIndex) => {
         isPencilMode={isPencilMode}
         onPencilModeToggle={() => setIsPencilMode(!isPencilMode)}
       />
-      {showSolutionDialog && (
+      {showSolutionDialog && solution && (
         <div className="dialog-overlay">
           <div className="dialog">
             <h2>Solution</h2>
@@ -620,6 +620,17 @@ const checkConflict = (rowIndex, cellIndex) => {
                 </tbody>
               </table>
             </div>
+            <div className="dialog-buttons">
+              <button onClick={() => setShowSolutionDialog(false)}>Close</button>
+            </div>
+          </div>
+        </div>
+      )}
+      {showSolutionDialog && !solution && (
+        <div className="dialog-overlay">
+          <div className="dialog">
+            <h2>No Solution Available</h2>
+            <p>Sorry, we couldn't retrieve the solution for this puzzle.</p>
             <div className="dialog-buttons">
               <button onClick={() => setShowSolutionDialog(false)}>Close</button>
             </div>
