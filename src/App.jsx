@@ -27,6 +27,33 @@ function App() {
   const { isAuthenticated, saveGame, user, logout } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const [isPencilMode, setIsPencilMode] = useState(false);
+  const [autoSubmitted, setAutoSubmitted] = useState(false);
+  
+  useEffect(() => {
+    if (!puzzle) return;
+    const isFilled = puzzle.every(row => row.every(cell => cell !== 0));
+    // Reset autoSubmitted if board is not completely filled
+    if (!isFilled && autoSubmitted) {
+      setAutoSubmitted(false);
+      return;
+    }
+    if (isFilled && !autoSubmitted) {
+      let hasError = false;
+      for (let rowIndex = 0; rowIndex < 9; rowIndex++) {
+        for (let cellIndex = 0; cellIndex < 9; cellIndex++) {
+          if (checkConflict(rowIndex, cellIndex)) {
+            hasError = true;
+            break;
+          }
+        }
+        if (hasError) break;
+      }
+      if (!hasError) {
+        setAutoSubmitted(true);
+        handleSubmit();
+      }
+    }
+  }, [puzzle]);
 
   useEffect(() => {
     document.body.classList.toggle('dark-mode', isDarkMode);
@@ -50,7 +77,7 @@ function App() {
     try {
 
       // const response = await fetch(`http://localhost:8000/sudoku?removals=${removals}`);
-      const response = await fetch(`https://sudgen.onrender.com/sudoku?removals=${removals}`);
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/sudoku?removals=${removals}`);
       const data = await response.json();
       const gameState = {
         puzzle: data.puzzle,
@@ -333,7 +360,7 @@ function App() {
 
     // If no localStorage and authenticated, try to load from server
     if (isAuthenticated) {
-      fetch('https://sudgen.onrender.com/auth/session', {
+      fetch(`${import.meta.env.VITE_API_URL}/auth/session`, {
       // fetch('http://localhost:8000/auth/session', {
         credentials: 'include'
       })
@@ -607,9 +634,6 @@ const checkConflict = (rowIndex, cellIndex) => {
       ) : (
         <p>Loading puzzle...</p>
       )}
-      <div className="submit-button">
-        <button onClick={handleSubmit}>Submit</button>
-      </div>
       {showDialog && (
         <div className="dialog-overlay">
           <div className="dialog">
