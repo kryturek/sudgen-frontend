@@ -5,12 +5,7 @@ export const Navbar = ({
   isDarkMode, 
   onDarkModeToggle, 
   onNewGame, 
-  onAuthClick, 
-  onLogout,
   onSolve,
-//   isSolved,
-  isAuthenticated,
-  username,
   menuOpen,
   setMenuOpen
 }) => {
@@ -26,11 +21,7 @@ export const Navbar = ({
         onNewGame={onNewGame}
         onSolve={onSolve}
         onDarkModeToggle={onDarkModeToggle}
-        onAuthClick={onAuthClick}
-        onLogout={onLogout}
         isDarkMode={isDarkMode}
-        isAuthenticated={isAuthenticated}
-        username={username}
       />
     </nav>
   );

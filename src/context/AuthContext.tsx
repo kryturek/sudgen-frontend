@@ -1,140 +1,55 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { User, AuthState, SavedGame } from '../types/user';
+import React, { createContext, useContext } from 'react';
 
-interface AuthContextType extends AuthState {
-  login: (email: string, password: string) => Promise<void>;
-  register: (username: string, email: string, password: string) => Promise<void>;
+// Simplified interface without user auth
+interface AuthContextType {
+  isAuthenticated: boolean;
+  user: null;
+  savedGames: never[];
+  login: () => Promise<void>;
+  register: () => Promise<void>;
   logout: () => void;
-  saveGame: (game: Omit<SavedGame, 'id'>) => Promise<void>;
-  loadGame: (gameId: string) => Promise<SavedGame>;
+  saveGame: () => Promise<void>;
+  loadGame: () => Promise<null>;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-const API_URL = 'https://sudgen.onrender.com';
+// Create a simple context without actual auth
+const AuthContext = createContext<AuthContextType>({
+  isAuthenticated: false,
+  user: null,
+  savedGames: [],
+  login: async () => {},
+  register: async () => {},
+  logout: () => {},
+  saveGame: async () => {},
+  loadGame: async () => null
+});
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [authState, setAuthState] = useState<AuthState>({
-    user: null,
+  // Provide a dummy auth context that always returns not authenticated
+  const authValue = {
     isAuthenticated: false,
-    savedGames: []
-  });
-
-  useEffect(() => {
-    // Check for existing session
-    checkAuth();
-  }, []);
-
-  const checkAuth = async () => {
-    // Don't check if we're already authenticated
-    if (authState.isAuthenticated) return;
-    
-    try {
-      const response = await fetch(`${API_URL}/auth/session`, {
-        credentials: 'include'
-      });
-      if (response.ok) {
-        const data = await response.json();
-        setAuthState({
-          user: data.user,
-          isAuthenticated: true,
-          savedGames: data.savedGames || [] // Add default empty array
-        });
-      }
-    } catch (error) {
-      console.error('Auth check failed:', error);
+    user: null,
+    savedGames: [],
+    login: async () => {
+      console.log('Auth functionality has been removed');
+    },
+    register: async () => {
+      console.log('Auth functionality has been removed');
+    },
+    logout: () => {
+      console.log('Auth functionality has been removed');
+    },
+    saveGame: async () => {
+      console.log('Remote game saving has been removed');
+    },
+    loadGame: async () => {
+      console.log('Remote game loading has been removed');
+      return null;
     }
-  };
-
-  const login = async (email: string, password: string) => {
-    const response = await fetch(`${API_URL}/auth/login`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password })
-    });
-
-    if (!response.ok) {
-      throw new Error('Login failed');
-    }
-
-    const data = await response.json();
-    setAuthState({
-      user: data.user,
-      isAuthenticated: true,
-      savedGames: data.savedGames
-    });
-  };
-
-  const register = async (username: string, email: string, password: string) => {
-    const response = await fetch(`${API_URL}/auth/register`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include',
-      body: JSON.stringify({ username, email, password })
-    });
-
-    const data = await response.json();
-    
-    if (!response.ok) {
-      throw new Error(data.detail || 'Registration failed');
-    }
-
-    setAuthState({
-      user: data.user,
-      isAuthenticated: true,
-      savedGames: []
-    });
-  };
-
-  const logout = async () => {
-    await fetch(`${API_URL}/auth/logout`, {
-      method: 'POST',
-      credentials: 'include'
-    });
-    setAuthState({ user: null, isAuthenticated: false, savedGames: [] });
-  };
-
-  const saveGame = async (game: Omit<SavedGame, 'id'>) => {
-    const response = await fetch(`${API_URL}/games/save`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(game)
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to save game');
-    }
-
-    const savedGame = await response.json();
-    setAuthState(prev => ({
-      ...prev,
-      savedGames: [...prev.savedGames, savedGame]
-    }));
-  };
-
-  const loadGame = async (gameId: string) => {
-    const response = await fetch(`${API_URL}/games/${gameId}`, {
-      credentials: 'include'
-    });
-
-    if (!response.ok) {
-      throw new Error('Failed to load game');
-    }
-
-    return response.json();
   };
 
   return (
-    <AuthContext.Provider value={{
-      ...authState,
-      login,
-      register,
-      logout,
-      saveGame,
-      loadGame
-    }}>
+    <AuthContext.Provider value={authValue}>
       {children}
     </AuthContext.Provider>
   );

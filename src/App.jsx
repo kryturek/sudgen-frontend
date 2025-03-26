@@ -1,10 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './App.css';
 import { getMockPuzzle } from './mockPuzzles';
-import { AuthDialog } from './components/AuthDialog';
-import { useAuth } from './context/AuthContext';
 import { Navbar } from './components/Navbar';
-import HamburgerMenu from './components/HamburgerMenu';
 import NumberPad from './components/NumberPad';
 
 function App() {
@@ -22,9 +19,8 @@ function App() {
   const [showDialog, setShowDialog] = useState(false);
   const [removalsCount, setRemovalsCount] = useState(30);
   const [previewPuzzle, setPreviewPuzzle] = useState(null);
-  const [showAuthDialog, setShowAuthDialog] = useState(false);
   const [showSolutionDialog, setShowSolutionDialog] = useState(false);
-  const { isAuthenticated, saveGame, user, logout } = useAuth();
+  // const { isAuthenticated } = useAuth();
   const [menuOpen, setMenuOpen] = useState(false);
   const [isPencilMode, setIsPencilMode] = useState(false);
   const [autoSubmitted, setAutoSubmitted] = useState(false);
@@ -75,9 +71,8 @@ function App() {
   // Function to fetch puzzle from the FastAPI endpoint
   const fetchPuzzle = async (removals) => {
     try {
-
-      // const response = await fetch(`http://localhost:8000/sudoku?removals=${removals}`);
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/sudoku?removals=${removals}`);
+      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+      const response = await fetch(`${apiUrl}/sudoku?removals=${removals}`);
       const data = await response.json();
       const gameState = {
         puzzle: data.puzzle,
@@ -98,6 +93,14 @@ function App() {
       saveToLocalStorage(gameState);
     } catch (error) {
       console.error('Error fetching puzzle:', error);
+      // Use mock puzzle as a fallback
+      const mockPuzzle = getMockPuzzle(removals);
+      setPuzzle(mockPuzzle);
+      setSolution(null); // We don't have the solution for mock puzzles
+      setOriginalPuzzle(mockPuzzle);
+      setUserPuzzle(mockPuzzle);
+      setIsSolved(false);
+      setPencilMarks({});
     }
   };
 
@@ -105,7 +108,7 @@ function App() {
     setShowSolutionDialog(true);
   };
 
-  const handleNumberInput = async (rowIndex, cellIndex, number) => {
+  const handleNumberInput = (rowIndex, cellIndex, number) => {
     // Check if the cell is part of the original puzzle
     if (originalPuzzle[rowIndex][cellIndex] !== 0) {
       return; // Don't allow changes to original numbers
@@ -136,28 +139,6 @@ function App() {
       pencilMarks: updatedPencilMarks,
       removalsCount,
     });
-
-    if (isAuthenticated) {
-      // Convert pencil marks to array format before saving
-      const processedPencilMarks = {};
-      Object.entries(updatedPencilMarks).forEach(([key, value]) => {
-        processedPencilMarks[key] = Array.from(value);
-      });
-
-      try {
-        await saveGame({
-          puzzle: newPuzzle,
-          solution,
-          pencil_marks: processedPencilMarks,
-          difficulty: removalsCount,
-          started_at: new Date().toISOString(),
-          last_played: new Date().toISOString(),
-          completed: false
-        });
-      } catch (error) {
-        console.error('Error saving game state:', error);
-      }
-    }
   };
 
   const getPencilMarkNumber = (key) => {
@@ -290,27 +271,6 @@ function App() {
     const solutionString = JSON.stringify(solution);
     if (puzzleString === solutionString) {
       alert('Congratulations! You solved the puzzle correctly.');
-      if (isAuthenticated && puzzleString === solutionString) {
-        // Convert pencil marks to array format before saving
-        const processedPencilMarks = {};
-        Object.entries(pencilMarks).forEach(([key, value]) => {
-          processedPencilMarks[key] = Array.from(value);
-        });
-
-        try {
-          await saveGame({
-            puzzle: cleanedPuzzle,
-            solution,
-            pencil_marks: processedPencilMarks,
-            difficulty: removalsCount,
-            started_at: new Date().toISOString(),
-            last_played: new Date().toISOString(),
-            completed: true
-          });
-        } catch (error) {
-          console.error('Error saving completed game:', error);
-        }
-      }
     } else {
       alert('Incorrect solution. Please try again.');
     }
@@ -355,46 +315,11 @@ function App() {
       setUserPuzzle(savedUserPuzzle);
       setPencilMarks(savedPencilMarks || {});
       setRemovalsCount(savedRemovalsCount);
-      return; // Exit early if we loaded from localStorage
-    }
-
-    // If no localStorage and authenticated, try to load from server
-    if (isAuthenticated) {
-      fetch(`${import.meta.env.VITE_API_URL}/auth/session`, {
-      // fetch('http://localhost:8000/auth/session', {
-        credentials: 'include'
-      })
-      .then(response => response.json())
-      .then(data => {
-        if (data.currentGame) {
-          const gameState = {
-            puzzle: data.currentGame.puzzle,
-            solution: data.currentGame.solution,
-            originalPuzzle: data.currentGame.puzzle,
-            userPuzzle: data.currentGame.puzzle,
-            pencilMarks: data.currentGame.pencil_marks || {},
-            removalsCount: data.currentGame.difficulty,
-          };
-          setPuzzle(data.currentGame.puzzle);
-          setSolution(data.currentGame.solution);
-          setOriginalPuzzle(data.currentGame.puzzle);
-          setUserPuzzle(data.currentGame.puzzle);
-          setPencilMarks(data.currentGame.pencil_marks || {});
-          setRemovalsCount(data.currentGame.difficulty);
-          saveToLocalStorage(gameState); // Save server game to localStorage
-        } else {
-          fetchPuzzle(30); // Only fetch new if no saved game exists
-        }
-      })
-      .catch(error => {
-        console.error('Error fetching current game:', error);
-        fetchPuzzle(30);
-      });
     } else {
-      // If not authenticated and no localStorage, fetch new puzzle
+      // If no localStorage, fetch new puzzle
       fetchPuzzle(30);
     }
-  }, [isAuthenticated]); // Only run when auth state changes
+  }, []); // Only run on initial mount
 
   const getHighlightClass = (rowIndex, cellIndex) => {
     if (!focusedCell) return '';
@@ -521,24 +446,14 @@ const checkConflict = (rowIndex, cellIndex) => {
     }
   };
 
-  // Add logout handler
-  const handleLogout = async () => {
-    await logout();
-    setMenuOpen(false);  // Close menu if open
-  };
-
   return (
     <div className="App" style={{ height: '100vh' }}>
       <Navbar
         isDarkMode={isDarkMode}
         onDarkModeToggle={() => setIsDarkMode(!isDarkMode)}
         onNewGame={handleNewGame}
-        onAuthClick={() => setShowAuthDialog(true)}
-        onLogout={handleLogout}  // Add this
         onSolve={handleSolve}
         isSolved={isSolved}
-        isAuthenticated={isAuthenticated}
-        username={user?.username}  // Add this
         menuOpen={menuOpen}
         setMenuOpen={setMenuOpen}
       />
@@ -669,10 +584,6 @@ const checkConflict = (rowIndex, cellIndex) => {
           </div>
         </div>
       )}
-      <AuthDialog 
-        isOpen={showAuthDialog}
-        onClose={() => setShowAuthDialog(false)}
-      />
       <NumberPad
         onNumberClick={handleNumberPadInput}
         isPencilMode={isPencilMode}
