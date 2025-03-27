@@ -462,7 +462,7 @@ const checkConflict = (rowIndex, cellIndex) => {
       />
       
       {puzzle ? (
-        <div className="puzzle-container" style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', paddingBlock: '10px', minHeight: '0' }}>
+        <div className="puzzle-container">
           <table className="puzzle">
             <tbody>
               {puzzle.map((row, rowIndex) => (
