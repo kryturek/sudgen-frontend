@@ -29,15 +29,7 @@ Adjust the `removals` parameter to control difficulty.
 
 ## Development
 
-- **Frontend:** React
+- **Frontend:** React (Vite)
 - **Backend:** FastAPI
 - **Frontend Deployment:** GitHub Pages  
 - **Backend Deployment:** Render.com
-
-## Getting Started
-
-```bash
-git clone https://github.com/your-username/sudgen-frontend.git
-cd sudgen-frontend
-npm install
-npm run dev

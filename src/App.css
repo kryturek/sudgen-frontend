@@ -626,6 +626,7 @@ button.hamburger:hover {
     background: var(--bg-color);
     color: var(--text-color);
     border-radius: 8px;
+    --webkit-tap-highlight-color: transparent;
   }
 
   .number-button:active {

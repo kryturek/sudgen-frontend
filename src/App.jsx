@@ -422,6 +422,9 @@ const checkConflict = (rowIndex, cellIndex) => {
     const [rowIndex, cellIndex] = focusedCell;
     
     if (isPencilMode && number !== 0) {
+      if (puzzle[rowIndex][cellIndex] !== 0) {
+        return; // Don't allow pencil marks on filled cells
+      }
       const cellKey = `${rowIndex}-${cellIndex}`;
       setPencilMarks(prevMarks => {
         const newMarks = { ...prevMarks };
@@ -459,7 +462,7 @@ const checkConflict = (rowIndex, cellIndex) => {
       />
       
       {puzzle ? (
-        <div className="puzzle-container">
+        <div className="puzzle-container" style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center', paddingBlock: '10px', minHeight: '0' }}>
           <table className="puzzle">
             <tbody>
               {puzzle.map((row, rowIndex) => (
