@@ -71,7 +71,7 @@ function App() {
   // Function to fetch puzzle from the FastAPI endpoint
   const fetchPuzzle = async (removals) => {
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'https://sudgen.onrender.com';
+      const apiUrl = import.meta.env.VITE_API_URL;
       const response = await fetch(`${apiUrl}/sudoku?removals=${removals}`);
       const data = await response.json();
       const gameState = {
